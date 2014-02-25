@@ -101,8 +101,7 @@ define(function(require) {
      * @return {Uint8Array}    Uint8Array view on the ArrayBuffer
      */
     function bufferToTypedArray(buffer) {
-        var ab = new ArrayBuffer(buffer.length),
-            view = new Uint8Array(ab);
+        var view = new Uint8Array(buffer.length);
 
         for (var i = 0, len = buffer.length; i < len; i++) {
             view[i] = buffer.readUInt8(i);
