@@ -32,7 +32,9 @@ define(function(require) {
                 mailreader.parseRfc({
                     message: message,
                     raw: rfcRaw
-                }, function() {
+                }, function(err, msg) {
+                    expect(err).to.not.exist;
+                    expect(msg).to.exist;
                     expect(message.body).to.equal('asdasd');
                     expect(message.attachments).to.not.be.empty;
 
@@ -48,7 +50,9 @@ define(function(require) {
                 mailreader.parseText({
                     message: message,
                     raw: textRaw
-                }, function() {
+                }, function(err, msg) {
+                    expect(err).to.not.exist;
+                    expect(msg).to.exist;
                     expect(message.body).to.equal('asdasd');
 
                     done();
@@ -63,7 +67,10 @@ define(function(require) {
                 mailreader.parseAttachment({
                     attachment: attachment,
                     raw: attmtRaw
-                }, function() {
+                }, function(err, attmt) {
+                    expect(err).to.not.exist;
+                    expect(attmt).to.exist;
+
                     expect(attachment.content).to.exist;
 
                     done();

@@ -28,7 +28,7 @@ define(function(require) {
             message = options.message;
 
         message.attachments = message.attachments || [];
-        options.message.body = options.message.body || '';
+        message.body = options.message.body || '';
 
         mailparser.on("end", function(parsed) {
             message.body = (parsed.text || '').replace(/[\r]?\n$/g, '');
@@ -69,7 +69,7 @@ define(function(require) {
             // the mailparser parsed the content of the text node, so let's add it to the mail body
             options.message.body += text;
 
-            callback();
+            callback(null, options.message);
         });
         mailparser.end(options.raw);
     };
