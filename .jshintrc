@@ -26,6 +26,10 @@
         "afterEach": true,
         "window": true,
         "mocha": true,
-        "mochaPhantomJS": true
+        "mochaPhantomJS": true,
+        "importScripts": true,
+        "postMessage": true,
+        "before": true,
+        "self": true
 	}
 }

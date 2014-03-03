@@ -1,7 +1,6 @@
 if (typeof module === 'object' && typeof define !== 'function') {
     var define = function(factory) {
         'use strict';
-
         module.exports = factory(require, exports, module);
     };
 }
@@ -9,9 +8,14 @@ if (typeof module === 'object' && typeof define !== 'function') {
 define(function(require) {
     'use strict';
 
-    var MailParser = require('mailparser').MailParser;
-
+    var parser = require('./mailreader-parser');
     var mailreader = {};
+
+    mailreader.startWorker = function(path) {
+        path = (typeof path !== 'undefined') ? path : './mailreader-parser-worker.js';
+        mailreader.worker = new Worker(path);
+    };
+
     mailreader.isRfc = function(string) {
         return string.indexOf('Content-Type: ') !== -1;
     };
@@ -24,29 +28,30 @@ define(function(require) {
      * @param {Function} callback will be called the message is parsed
      */
     mailreader.parseRfc = function(options, callback) {
-        var mailparser = new MailParser(),
-            message = options.message;
+        options.message.attachments = options.message.attachments || [];
+        options.message.body = options.message.body || '';
 
-        message.attachments = message.attachments || [];
-        message.body = options.message.body || '';
+        parse('parseRfc', options.raw, function(error, parsed) {
+            if (error) {
+                callback(error);
+                return;
+            }
 
-        mailparser.on("end", function(parsed) {
-            message.body = (parsed.text || '').replace(/[\r]?\n$/g, '');
+            options.message.body = (parsed.text || '').replace(/[\r]?\n$/g, '');
 
             if (parsed.attachments) {
                 parsed.attachments.forEach(function(attmt) {
-                    message.attachments.push({
+                    options.message.attachments.push({
                         filename: attmt.generatedFileName,
                         filesize: attmt.length,
                         mimeType: attmt.contentType,
-                        content: bufferToTypedArray(attmt.content)
+                        content: attmt.content
                     });
                 });
             }
 
-            callback(null, message);
+            callback(null, options.message);
         });
-        mailparser.end(options.raw);
     };
 
     /**
@@ -56,12 +61,13 @@ define(function(require) {
      * @param {Function} callback Will be invoked when the text was parsed
      */
     mailreader.parseText = function(options, callback) {
-        var mailparser = new MailParser();
         options.message.body = options.message.body || '';
 
-        mailparser.on('end', function(parsed) {
-            // the mailparser parses the pgp/mime attachments, so we need to do a little extra work here
-            var text = (parsed.text || parsed.attachments[0].content.toString('binary'));
+        parse('parseText', options.raw, function(error, text) {
+            if (error) {
+                callback(error);
+                return;
+            }
 
             // remove the unnecessary \n's and \r\n's at the end of the string...
             text = text.replace(/([\r]?\n)*$/g, '');
@@ -71,7 +77,6 @@ define(function(require) {
 
             callback(null, options.message);
         });
-        mailparser.end(options.raw);
     };
 
     /**
@@ -81,36 +86,43 @@ define(function(require) {
      * @param {Function} callback Will be invoked when the text was parsed
      */
     mailreader.parseAttachment = function(options, callback) {
-        var mailparser = new MailParser();
+        parse('parseAttachment', options.raw, function(error, content) {
+            if (error) {
+                callback(error);
+                return;
+            }
 
-        mailparser.on("end", function(parsed) {
-            options.attachment.content = bufferToTypedArray(parsed.attachments[0].content);
+            options.attachment.content = content;
             callback(null, options.attachment);
         });
-
-        mailparser.end(options.raw);
     };
 
-    //
-    // Helper Methods
-    //
-
-    /**
-     * Turns a node-style buffer into a typed array
-     * @param  {Buffer} buffer A node-style buffer
-     * @return {Uint8Array}    Uint8Array view on the ArrayBuffer
-     */
-    function bufferToTypedArray(buffer) {
-        if (!buffer) {
-            return new Uint8Array();
+    function parse(method, raw, cb) {
+        if (typeof window !== 'undefined' && window.Worker && !mailreader.worker) {
+            throw new Error('Worker is not initialized!');
         }
-        
-        var view = new Uint8Array(buffer.length);
 
-        for (var i = 0, len = buffer.length; i < len; i++) {
-            view[i] = buffer.readUInt8(i);
+        if (!mailreader.worker) {
+            parser.parse(method, raw, function(parsed) {
+                cb(null, parsed);
+            });
+            return;
         }
-        return view;
+
+        mailreader.worker.onmessage = function(e) {
+            cb(null, e.data);
+        };
+
+        mailreader.worker.onerror = function(e) {
+            var error = new Error('Error handling web worker: Line ' + e.lineno + ' in ' + e.filename + ': ' + e.message);
+            console.error(error);
+            cb(error);
+        };
+
+        mailreader.worker.postMessage({
+            method: method,
+            raw: raw
+        });
     }
 
     return mailreader;
