@@ -37,6 +37,9 @@ define(function(require) {
             });
         }
 
+        // remove the unnecessary \n's and \r\n's at the end of the string...
+        parsed.text = (parsed.text || '').replace(/([\r]?\n)*$/g, '');
+
         cb(parsed);
     }
 
@@ -45,8 +48,13 @@ define(function(require) {
     }
 
     function parseText(parsed, cb) {
+        var text = parsed.text || parsed.attachments[0].content.toString('binary') || '';
+
+        // remove the unnecessary \n's and \r\n's at the end of the string...
+        text = text.replace(/([\r]?\n)*$/g, '');
+
         // the mailparser parses the pgp/mime attachments, so we need to do a little extra work here
-        cb(parsed.text || parsed.attachments[0].content.toString('binary'));
+        cb(text);
     }
 
     //

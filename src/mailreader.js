@@ -37,7 +37,7 @@ define(function(require) {
                 return;
             }
 
-            options.message.body = (parsed.text || '').replace(/[\r]?\n$/g, '');
+            options.message.body = parsed.text;
 
             if (parsed.attachments) {
                 parsed.attachments.forEach(function(attmt) {
@@ -68,9 +68,6 @@ define(function(require) {
                 callback(error);
                 return;
             }
-
-            // remove the unnecessary \n's and \r\n's at the end of the string...
-            text = text.replace(/([\r]?\n)*$/g, '');
 
             // the mailparser parsed the content of the text node, so let's add it to the mail body
             options.message.body += text;
