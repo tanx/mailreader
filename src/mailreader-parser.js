@@ -44,11 +44,22 @@ define(function(require) {
     }
 
     function parseAttachment(parsed, cb) {
-        cb(bufferToTypedArray(parsed.attachments[0].content));
+        if (parsed.attachments && parsed.attachments.length > 0) {
+            cb(bufferToTypedArray(parsed.attachments[0].content));
+            return;
+        }
+
+        cb();
     }
 
     function parseText(parsed, cb) {
-        var text = parsed.text || parsed.attachments[0].content.toString('binary') || '';
+        var text = '';
+
+        if (typeof parsed.text !== 'undefined') {
+            text = parsed.text;
+        } else if (parsed.attachments && parsed.attachments.length > 0) {
+            text = parsed.attachments[0].content.toString('binary');
+        }
 
         // remove the unnecessary \n's and \r\n's at the end of the string...
         text = text.replace(/([\r]?\n)*$/g, '');
