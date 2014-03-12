@@ -92,5 +92,33 @@ define(function(require) {
                 });
             });
         });
+
+        describe('async parsing', function() {
+            it('should parse 100 rfc strings in FIFO order', function(done) {
+                var invocations = 0,
+                    maxInvocations = 100;
+
+                function checkDone() {
+                    if (invocations === maxInvocations) {
+                        done();
+                    }
+                }
+
+                for (var i = 0; i < maxInvocations; i++) {
+                    mailreader.parseRfc({
+                        message: {},
+                        raw: rfcRaw
+                    }, cb(i));
+                }
+
+                function cb(i) {
+                    return function() {
+                        expect(invocations).to.equal(i);
+                        invocations++;
+                        checkDone();
+                    };
+                }
+            });
+        });
     });
 });
