@@ -14,6 +14,8 @@ define(function(require) {
     mailreader.startWorker = function(path) {
         path = (typeof path !== 'undefined') ? path : './mailreader-parser-worker.js';
         mailreader.worker = new Worker(path);
+        mailreader._workerQueue = [];
+        mailreader._workerBusy = false;
     };
 
     mailreader.isRfc = function(string) {
@@ -106,21 +108,42 @@ define(function(require) {
             return;
         }
 
+        mailreader._workerQueue.push({
+            method: method,
+            raw: raw,
+            cb: cb
+        });
+        mailreader._processWorkerQueue();
+    }
+
+    mailreader._processWorkerQueue = function() {
+        if (mailreader._workerBusy || mailreader._workerQueue.length === 0) {
+            return;
+        }
+
+        mailreader._workerBusy = true;
+        var current = mailreader._workerQueue.shift();
+
         mailreader.worker.onmessage = function(e) {
-            cb(null, e.data);
+            mailreader._workerBusy = false;
+            mailreader._processWorkerQueue();
+            current.cb(null, e.data);
         };
 
         mailreader.worker.onerror = function(e) {
             var error = new Error('Error handling web worker: Line ' + e.lineno + ' in ' + e.filename + ': ' + e.message);
+            mailreader._workerBusy = false;
+            mailreader._processWorkerQueue();
             console.error(error);
-            cb(error);
+            current.cb(error);
         };
 
         mailreader.worker.postMessage({
-            method: method,
-            raw: raw
+            method: current.method,
+            raw: current.raw
         });
-    }
+
+    };
 
     return mailreader;
 });
