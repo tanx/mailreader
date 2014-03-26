@@ -10,14 +10,14 @@ module.exports = function(grunt) {
             }
         },
 
-        mochaTest: {
-            all: {
-                options: {
-                    reporter: 'dot'
-                },
-                src: ['test/test.js']
-            }
-        },
+        // mochaTest: {
+        //     all: {
+        //         options: {
+        //             reporter: 'dot'
+        //         },
+        //         src: ['test/test.js']
+        //     }
+        // },
 
         connect: {
             dev: {
@@ -41,24 +41,26 @@ module.exports = function(grunt) {
         copy: {
             npm: {
                 expand: true,
-                flatten: true,
+                flatten: false,
                 cwd: 'node_modules/',
                 src: [
                     'chai/chai.js',
                     'mocha/mocha.js',
                     'mocha/mocha.css',
                     'requirejs/require.js',
-                    'mailparser/src/*.js',
-                    'mailparser/node_modules/encoding/src/*.js',
-                    'mailparser/node_modules/encoding/node_modules/iconv-lite/src/*.js',
-                    'mailparser/node_modules/mime/src/*.js',
-                    'mailparser/node_modules/mimelib/src/*.js',
-                    'mailparser/node_modules/mimelib/node_modules/addressparser/src/*.js',
-                    'mailparser/node_modules/node-shims/src/*.js',
-                    'mailparser/node_modules/node-shims/node_modules/node-forge/js/*.js',
-                    'mailparser/node_modules/setimmediate/setImmediate.js'
+                    'arraybuffer-slice/index.js',
+                    'stringencoding/lib/*',
+                    'mimeparser/src/*',
+                    'mimeparser/node_modules/mimefuncs/src/*'
                 ],
-                dest: 'test/lib/'
+                dest: 'test/lib/',
+                rename: function(dest, src) {
+                    if (src === 'arraybuffer-slice/index.js') {
+                        // 'index.js' is obviously a good name for a polyfill. duh.
+                        return dest + 'arraybuffer-slice.js';
+                    }
+                    return dest + '/' + src.split('/').pop();
+                }
             },
             app: {
                 expand: true,
@@ -78,7 +80,7 @@ module.exports = function(grunt) {
         watch: {
             js: {
                 files: ['src/*.js'],
-                tasks: ['build']
+                tasks: ['clean', 'copy']
             }
         },
     });
@@ -93,7 +95,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
 
     // Tasks
-    grunt.registerTask('dev', ['connect:dev', 'watch']);
-    grunt.registerTask('build', ['clean', 'copy']);
-    grunt.registerTask('default', ['jshint', 'clean', 'copy', 'mochaTest', 'mocha_phantomjs']);
+    grunt.registerTask('dev', ['connect:dev']);
+    grunt.registerTask('default', ['jshint', 'clean', 'copy', 'mocha_phantomjs']);
 };

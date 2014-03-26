@@ -2,12 +2,17 @@
 <html>
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-    <link href="../node_modules/mocha/mocha.css" rel="stylesheet" />
+    <link href="lib/mocha.css" rel="stylesheet" />
 </head>
 <body>
     <div id="mocha"></div>
 
-    <script src="lib/chai.js"></script>
+    <!-- phantomjs polyfill for ArrayBuffer.slice -->
+    <script src="lib/arraybuffer-slice.js"></script>
+
+    <!-- polyfill for TextEncoder/TextDecoder -->
+    <script src="lib/stringencoding.js"></script>
+
     <script src="lib/mocha.js"></script>
     <script data-main="index.js" src="lib/require.js"></script>
 </body>

@@ -6,7 +6,7 @@
 	},
 	"main": "src/mailreader.js",
 	"dependencies": {
-		"mailparser": "https://github.com/whiteout-io/mailparser/tarball/v0.4.0"
+		"mimeparser": "https://github.com/whiteout-io/mimeparser/tarball/dev/no-chunking"
 	},
 	"devDependencies": {
 		"chai": "~1.8.1",
@@ -20,6 +20,8 @@
 		"mocha": "~1.16.2",
 		"phantomjs": "~1.9.7-1",
 		"grunt-mocha-phantomjs": "~0.4.0",
-		"requirejs": "~2.1.10"
+		"requirejs": "~2.1.10",
+		"stringencoding": "https://github.com/whiteout-io/stringencoding/tarball/umd",
+		"arraybuffer-slice": "0.0.2"
 	}
 }

@@ -1,15 +1,8 @@
 (function() {
     'use strict';
 
-    // import web worker dependencies
+    // import web worker dependencies and polyfills
     importScripts('require.js');
-
-    require.config({
-        paths: {
-            'node-forge': 'forge',
-            'setimmediate': 'setImmediate'
-        }
-    });
 
     self.addEventListener('message', function(e) {
         require(['mailreader-parser'], function(parser) {
