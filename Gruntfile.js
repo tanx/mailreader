@@ -49,9 +49,10 @@ module.exports = function(grunt) {
                     'mocha/mocha.css',
                     'requirejs/require.js',
                     'arraybuffer-slice/index.js',
-                    'stringencoding/lib/*',
+                    'stringencoding/dist/*',
                     'mimeparser/src/*',
-                    'mimeparser/node_modules/mimefuncs/src/*'
+                    'mimeparser/node_modules/mimefuncs/src/*',
+                    'mimeparser/node_modules/addressparser/src/*'
                 ],
                 dest: 'test/lib/',
                 rename: function(dest, src) {
