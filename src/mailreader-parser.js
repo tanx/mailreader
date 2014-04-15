@@ -38,18 +38,23 @@ define(function(require) {
         Object.keys(parser.nodes).forEach(function(key) {
             var node = parser.nodes[key];
 
-            if (node.contentType.value.indexOf('text/plain') > -1 && !node.headers["content-disposition"]) {
+            if (node.contentType.value.indexOf('text/plain') > -1 && !node.headers['content-disposition']) {
                 parsed.text += new TextDecoder('utf-8').decode(node.content);
                 parsed.text = parsed.text.replace(/([\r]?\n)*$/g, '');
             }
-            if (node.headers["content-disposition"]) {
+
+            if (node.headers['content-disposition']) {
+                var filename = 'attachment';
+                if (node.headers['content-disposition'][0].params && node.headers['content-disposition'][0].params.filename) {
+                    filename = node.headers['content-disposition'][0].params.filename;
+                }
+
                 parsed.attachments.push({
-                    filename: 'attachment',
+                    filename: filename,
                     mimeType: 'application/octet-stream',
                     content: node.content
                 });
             }
-            // TODO: attachments
         });
 
 
@@ -60,7 +65,7 @@ define(function(require) {
         var node = parser.nodes.node,
             content;
         
-        if (node.headers["content-disposition"]) {
+        if (node.headers['content-disposition']) {
             content = node.content;
         }
 

@@ -8,7 +8,6 @@ require.config({
 });
 
 mocha.setup('bdd');
-
 require(['test/test'], function() {
     if (window.mochaPhantomJS) {
         mochaPhantomJS.run();
