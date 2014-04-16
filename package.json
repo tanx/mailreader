@@ -15,7 +15,7 @@
     "grunt-contrib-jshint": "0.6.4",
     "grunt-contrib-copy": "*",
     "grunt-contrib-clean": "*",
-    "grunt-mocha-test": "^0.10.2",
+    "grunt-mocha-test": "~0.10.2",
     "grunt-contrib-watch": "*",
     "mocha": "~1.16.2",
     "phantomjs": "~1.9.7-1",
