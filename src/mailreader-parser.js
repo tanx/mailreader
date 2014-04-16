@@ -1,4 +1,4 @@
-(function (factory) {
+(function(factory) {
     'use strict';
 
     if (typeof define === 'function' && define.amd) {
@@ -6,7 +6,7 @@
     } else if (typeof exports === 'object') {
         module.exports = factory(require('mimeparser'), require('stringencoding'));
     }
-})(function (MimeParser, stringencoding) {
+})(function(MimeParser, stringencoding) {
     'use strict';
 
     var TextDecoder = stringencoding.TextDecoder;
@@ -65,7 +65,7 @@
     function parseAttachment(parser, cb) {
         var node = parser.nodes.node,
             content;
-        
+
         if (node.headers['content-disposition']) {
             content = node.content;
         }
@@ -77,10 +77,8 @@
         var text = '';
 
         var node = parser.nodes.node;
-        if (node.contentType.value.indexOf('text/plain') > -1) {
-            text += new TextDecoder('utf-8').decode(node.content);
-            text = text.replace(/([\r]?\n)*$/g, '');
-        }
+        text += new TextDecoder('utf-8').decode(node.content);
+        text = text.replace(/([\r]?\n)*$/g, '');
 
         cb(text);
     }
