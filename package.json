@@ -6,7 +6,7 @@
   },
   "main": "src/mailreader.js",
   "dependencies": {
-    "mimeparser": "https://github.com/whiteout-io/mimeparser/tarball/v0.2.0"
+    "mimeparser": "https://github.com/whiteout-io/mimeparser/tarball/v0.3.0"
   },
   "devDependencies": {
     "chai": "~1.8.1",
