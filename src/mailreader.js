@@ -1,14 +1,14 @@
-if (typeof module === 'object' && typeof define !== 'function') {
-    var define = function(factory) {
-        'use strict';
-        module.exports = factory(require, exports, module);
-    };
-}
-
-define(function(require) {
+(function (factory) {
     'use strict';
 
-    var parser = require('./mailreader-parser');
+    if (typeof define === 'function' && define.amd) {
+        define(['mailreader-parser'], factory);
+    } else if (typeof exports === 'object') {
+        module.exports = factory(require('./mailreader-parser'));
+    }
+})(function (parser) {
+    'use strict';
+
     var mailreader = {};
 
     mailreader.startWorker = function(path) {
@@ -30,8 +30,9 @@ define(function(require) {
      * @param {Function} callback will be called the message is parsed
      */
     mailreader.parseRfc = function(options, callback) {
-        options.message.attachments = options.message.attachments || [];
-        options.message.body = options.message.body || '';
+        var msg = options.message;
+        msg.attachments = msg.attachments || [];
+        msg.body = msg.body || '';
 
         parse('parseRfc', options.raw, function(error, parsed) {
             if (error) {
@@ -39,20 +40,10 @@ define(function(require) {
                 return;
             }
 
-            options.message.body = parsed.text;
+            msg.body = parsed.text;
+            msg.attachments = parsed.attachments;
 
-            if (parsed.attachments) {
-                parsed.attachments.forEach(function(attmt) {
-                    options.message.attachments.push({
-                        filename: attmt.generatedFileName,
-                        filesize: attmt.length,
-                        mimeType: attmt.contentType,
-                        content: attmt.content
-                    });
-                });
-            }
-
-            callback(null, options.message);
+            callback(null, msg);
         });
     };
 
@@ -63,7 +54,8 @@ define(function(require) {
      * @param {Function} callback Will be invoked when the text was parsed
      */
     mailreader.parseText = function(options, callback) {
-        options.message.body = options.message.body || '';
+        var msg = options.message;
+        msg.body = msg.body || '';
 
         parse('parseText', options.raw, function(error, text) {
             if (error) {
@@ -72,9 +64,9 @@ define(function(require) {
             }
 
             // the mailparser parsed the content of the text node, so let's add it to the mail body
-            options.message.body += text;
+            msg.body += text;
 
-            callback(null, options.message);
+            callback(null, msg);
         });
     };
 
