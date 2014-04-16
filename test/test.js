@@ -1,16 +1,15 @@
-// if (typeof module === 'object' && typeof define !== 'function') {
-//     var define = function(factory) {
-//         'use strict';
-//         module.exports = factory(require, exports, module);
-//     };
-// }
-
-define(function(require) {
+(function (factory) {
     'use strict';
 
-    var chai = require('chai'),
-        expect = chai.expect,
-        mailreader = require('./lib/mailreader');
+    if (typeof define === 'function' && define.amd) {
+        define(['chai', './lib/mailreader'], factory);
+    } else if (typeof exports === 'object') {
+        module.exports = factory(require('chai'), require('../src/mailreader'));
+    }
+})(function (chai, mailreader) {
+    'use strict';
+
+    var expect = chai.expect;
 
     chai.Assertion.includeStack = true;
 

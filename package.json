@@ -1,27 +1,27 @@
 {
-	"name": "mailreader",
-	"version": "0.1.0",
-	"scripts": {
-		"test": "grunt"
-	},
-	"main": "src/mailreader.js",
-	"dependencies": {
-		"mimeparser": "https://github.com/whiteout-io/mimeparser/tarball/v0.2.0"
-	},
-	"devDependencies": {
-		"chai": "~1.8.1",
-		"grunt": "~0.4.1",
-		"grunt-contrib-connect": "~0.6.0",
-		"grunt-contrib-jshint": "0.6.4",
-		"grunt-contrib-copy": "*",
-		"grunt-contrib-clean": "*",
-		"grunt-mocha-test": "~0.8.1",
-		"grunt-contrib-watch": "*",
-		"mocha": "~1.16.2",
-		"phantomjs": "~1.9.7-1",
-		"grunt-mocha-phantomjs": "~0.4.0",
-		"requirejs": "~2.1.10",
-		"stringencoding": "https://github.com/whiteout-io/stringencoding/tarball/v0.1.0",
-		"arraybuffer-slice": "0.0.2"
-	}
+  "name": "mailreader",
+  "version": "0.1.0",
+  "scripts": {
+    "test": "grunt"
+  },
+  "main": "src/mailreader.js",
+  "dependencies": {
+    "mimeparser": "https://github.com/whiteout-io/mimeparser/tarball/v0.2.0"
+  },
+  "devDependencies": {
+    "chai": "~1.8.1",
+    "grunt": "~0.4.1",
+    "grunt-contrib-connect": "~0.6.0",
+    "grunt-contrib-jshint": "0.6.4",
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-clean": "*",
+    "grunt-mocha-test": "^0.10.2",
+    "grunt-contrib-watch": "*",
+    "mocha": "~1.16.2",
+    "phantomjs": "~1.9.7-1",
+    "grunt-mocha-phantomjs": "~0.4.0",
+    "requirejs": "~2.1.10",
+    "stringencoding": "https://github.com/whiteout-io/stringencoding/tarball/v0.1.0",
+    "arraybuffer-slice": "0.0.2"
+  }
 }

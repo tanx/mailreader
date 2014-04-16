@@ -10,14 +10,14 @@ module.exports = function(grunt) {
             }
         },
 
-        // mochaTest: {
-        //     all: {
-        //         options: {
-        //             reporter: 'dot'
-        //         },
-        //         src: ['test/test.js']
-        //     }
-        // },
+        mochaTest: {
+            all: {
+                options: {
+                    reporter: 'spec'
+                },
+                src: ['test/test.js']
+            }
+        },
 
         connect: {
             dev: {
@@ -32,7 +32,7 @@ module.exports = function(grunt) {
         mocha_phantomjs: {
             all: {
                 options: {
-                    reporter: 'dot'
+                    reporter: 'spec'
                 },
                 src: ['test/index.html']
             }
@@ -97,5 +97,5 @@ module.exports = function(grunt) {
 
     // Tasks
     grunt.registerTask('dev', ['connect:dev']);
-    grunt.registerTask('default', ['jshint', 'clean', 'copy', 'mocha_phantomjs']);
+    grunt.registerTask('default', ['jshint', 'clean', 'copy', 'mochaTest', 'mocha_phantomjs']);
 };

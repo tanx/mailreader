@@ -1,14 +1,15 @@
-// if (typeof module === 'object' && typeof define !== 'function') {
-//     var define = function(factory) {
-//         'use strict';
-//         module.exports = factory(require, exports, module);
-//     };
-// }
-
-define(function(require) {
+(function (factory) {
     'use strict';
 
-    var MimeParser = require('mimeparser');
+    if (typeof define === 'function' && define.amd) {
+        define(['mimeparser', 'stringencoding'], factory);
+    } else if (typeof exports === 'object') {
+        module.exports = factory(require('mimeparser'), require('stringencoding'));
+    }
+})(function (MimeParser, stringencoding) {
+    'use strict';
+
+    var TextDecoder = stringencoding.TextDecoder;
 
     var parser = {};
     parser.parse = function(method, raw, cb) {

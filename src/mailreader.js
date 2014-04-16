@@ -1,14 +1,14 @@
-// if (typeof module === 'object' && typeof define !== 'function') {
-//     var define = function(factory) {
-//         'use strict';
-//         module.exports = factory(require, exports, module);
-//     };
-// }
-
-define(function(require) {
+(function (factory) {
     'use strict';
 
-    var parser = require('./mailreader-parser');
+    if (typeof define === 'function' && define.amd) {
+        define(['mailreader-parser'], factory);
+    } else if (typeof exports === 'object') {
+        module.exports = factory(require('./mailreader-parser'));
+    }
+})(function (parser) {
+    'use strict';
+
     var mailreader = {};
 
     mailreader.startWorker = function(path) {
