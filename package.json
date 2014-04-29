@@ -1,13 +1,13 @@
 {
   "name": "mailreader",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "scripts": {
     "test": "grunt"
   },
   "main": "src/mailreader.js",
   "dependencies": {
     "stringencoding": "https://github.com/whiteout-io/stringencoding/tarball/v0.1.0",
-    "mimeparser": "https://github.com/whiteout-io/mimeparser/tarball/v0.3.1"
+    "mimeparser": "https://github.com/whiteout-io/mimeparser/tarball/v0.3.2"
   },
   "devDependencies": {
     "chai": "~1.8.1",
