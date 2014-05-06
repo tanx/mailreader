@@ -47,6 +47,7 @@
                 }, function(err, messageParts) {
                     expect(err).to.not.exist;
                     expect(messageParts[0].content.length).to.equal(29197);
+                    expect(messageParts[0].raw).to.not.exist;
 
                     done();
                 });
@@ -61,13 +62,14 @@
                     }]
                 }, function(err, messageParts) {
                     expect(err).to.not.exist;
-                    expect(messageParts[0].ciphertext).to.not.be.empty;
+                    expect(messageParts[0].content).to.not.be.empty;
+                    expect(messageParts[0].raw).to.not.exist;
 
                     done();
                 });
             });
 
-            it('should parse text', function(done) {
+            it('should parse signed', function(done) {
                 mailreader.parse({
                     messageParts: [{
                         type: 'signed',
@@ -79,6 +81,7 @@
                     expect(messageParts[0].signed).to.exist;
                     expect(messageParts[0].signature).to.exist;
                     expect(messageParts[0].content).to.not.be.empty;
+                    expect(messageParts[0].raw).to.not.exist;
 
                     done();
                 });

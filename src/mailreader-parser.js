@@ -13,14 +13,23 @@
 
     var parser = {};
     parser.parse = function(messageParts, cb) {
+        var parsedCounter = 0;
         messageParts.forEach(function(msgPart) {
             var parser = new MimeParser();
             parser.onend = function() {
                 walkMimeTree(parser.node, msgPart);
+                delete msgPart.raw;
+
+                // we're done with a body part, are we done?
+                parsedCounter++;
+                if (parsedCounter < messageParts.length) {
+                    return;
+                }
+
+                cb(messageParts);
             };
             parser.end(msgPart.plaintext || msgPart.raw);
         });
-        cb(messageParts);
     };
 
     var mimeTreeMatchers = [matchEncrypted, matchSigned, matchText, matchHtml, matchAttachment];
@@ -54,7 +63,7 @@
             return false;
         }
 
-        msgPart.ciphertext = new TextDecoder('utf-8').decode(node._childNodes[1].content);
+        msgPart.content = new TextDecoder('utf-8').decode(node._childNodes[1].content);
         return true;
     }
 
@@ -75,8 +84,10 @@
 
         var part;
         if (msgPart.type === 'signed') {
+            // this mime node is the signed node we gave to the mimeparser
             part = msgPart;
         } else {
+            // this mime node is part of a signed or encrypted node
             part = {
                 type: 'signed',
                 content: []
@@ -105,8 +116,10 @@
 
         var content = new TextDecoder('utf-8').decode(node.content).replace(/([\r]?\n)*$/g, '');
         if (msgPart.type === 'text') {
+            // this mime node is the text node we gave to the mimeparser
             msgPart.content = content;
         } else {
+            // this mime node is part of a signed or encrypted node
             msgPart.content.push({
                 type: 'text',
                 content: content
@@ -129,8 +142,10 @@
 
         var content = new TextDecoder('utf-8').decode(node.content).replace(/([\r]?\n)*$/g, '');
         if (msgPart.type === 'html') {
+            // this mime node is the html node we gave to the mimeparser
             msgPart.content = content;
         } else {
+            // this mime node is part of a signed or encrypted node
             msgPart.content.push({
                 type: 'html',
                 content: content
@@ -154,8 +169,10 @@
         }
 
         if (msgPart.type === 'attachment') {
+            // this mime node is the attachment node we gave to the mimeparser
             msgPart.content = node.content;
         } else {
+            // this mime node is part of a signed or encrypted node
             msgPart.content.push({
                 type: 'attachment',
                 content: node.content,
