@@ -12,77 +12,160 @@
     var TextDecoder = stringencoding.TextDecoder;
 
     var parser = {};
-    parser.parse = function(method, raw, cb) {
-        var done;
-
-        if (method === 'parseRfc') {
-            done = parseRfc;
-        } else if (method === 'parseText') {
-            done = parseText;
-        } else if (method === 'parseAttachment') {
-            done = parseAttachment;
-        } else {
-            throw new Error('unknown method!');
-        }
-
-        var parser = new MimeParser();
-        parser.onend = done.bind(null, parser, cb);
-        parser.end(raw);
+    parser.parse = function(messageParts, cb) {
+        messageParts.forEach(function(msgPart) {
+            var parser = new MimeParser();
+            parser.onend = function() {
+                walkMimeTree(parser.node, msgPart);
+            };
+            parser.end(msgPart.plaintext || msgPart.raw);
+        });
+        cb(messageParts);
     };
 
-    function parseRfc(parser, cb) {
-        var parsed = {
-            text: '',
-            attachments: []
-        };
+    var mimeTreeMatchers = [matchEncrypted, matchSigned, matchText, matchHtml, matchAttachment];
 
-        Object.keys(parser.nodes).forEach(function(key) {
-            var node = parser.nodes[key];
-
-            if (node.contentType.value.indexOf('text/plain') > -1 && !node.headers['content-disposition']) {
-                parsed.text += new TextDecoder('utf-8').decode(node.content);
-                parsed.text = parsed.text.replace(/([\r]?\n)*$/g, '');
+    function walkMimeTree(mimeNode, msgPart) {
+        var i = mimeTreeMatchers.length;
+        while (i--) {
+            if (mimeTreeMatchers[i](mimeNode, msgPart)) {
+                return;
             }
-
-            if (node.headers['content-disposition']) {
-                var filename = 'attachment';
-                if (node.headers['content-disposition'][0].params && node.headers['content-disposition'][0].params.filename) {
-                    filename = node.headers['content-disposition'][0].params.filename;
-                }
-
-                parsed.attachments.push({
-                    filename: filename,
-                    mimeType: 'application/octet-stream',
-                    content: node.content
-                });
-            }
-        });
-
-
-        cb(parsed);
-    }
-
-    function parseAttachment(parser, cb) {
-        var node = parser.nodes.node,
-            content;
-
-        if (node.headers['content-disposition']) {
-            content = node.content;
         }
 
-        cb(content);
+        if (mimeNode._childNodes) {
+            mimeNode._childNodes.forEach(function(childNode) {
+                walkMimeTree(childNode, msgPart);
+            });
+        }
     }
 
-    function parseText(parser, cb) {
-        var text = '';
+    /**
+     * Matches encrypted PGP/MIME nodes
+     *
+     * multipart/encrypted
+     * |
+     * |-- application/pgp-encrypted
+     * |-- application/octet-stream <-- ciphertext
+     */
+    function matchEncrypted(node, msgPart) {
+        var isEncrypted = /^multipart\/encrypted/i.test(node.contentType.value) && node._childNodes && node._childNodes[1];
+        if (!isEncrypted) {
+            return false;
+        }
 
-        var node = parser.nodes.node;
-        text += new TextDecoder('utf-8').decode(node.content);
-        text = text.replace(/([\r]?\n)*$/g, '');
-
-        cb(text);
+        msgPart.ciphertext = new TextDecoder('utf-8').decode(node._childNodes[1].content);
+        return true;
     }
 
+    /**
+     * Matches signed PGP/MIME nodes
+     *
+     * multipart/signed
+     * |
+     * |-- *** (signed mime sub-tree)
+     * |-- application/pgp-signature
+     */
+    function matchSigned(node, msgPart) {
+        var isSigned = /^multipart\/signed/i.test(node.contentType.value) && node._childNodes && node._childNodes[0] && node._childNodes[1] && /^application\/pgp-signature/i.test(node._childNodes[1].contentType.value);
+
+        if (!isSigned) {
+            return false;
+        }
+
+        var part;
+        if (msgPart.type === 'signed') {
+            part = msgPart;
+        } else {
+            part = {
+                type: 'signed',
+                content: []
+            };
+            msgPart.content.push(part);
+        }
+
+        part.signed = node._childNodes[0].raw;
+        part.signature = new TextDecoder('utf-8').decode(node._childNodes[1].content);
+
+        walkMimeTree(node._childNodes[0], part);
+
+        return true;
+    }
+
+    /**
+     * Matches non-attachment text/plain nodes
+     */
+    function matchText(node, msgPart) {
+        var disposition = node.headers['content-disposition'];
+        var isText = (/^text\/plain/i.test(node.contentType.value) && (!disposition || (disposition && disposition[0].value !== 'attachment')));
+
+        if (!isText) {
+            return false;
+        }
+
+        var content = new TextDecoder('utf-8').decode(node.content).replace(/([\r]?\n)*$/g, '');
+        if (msgPart.type === 'text') {
+            msgPart.content = content;
+        } else {
+            msgPart.content.push({
+                type: 'text',
+                content: content
+            });
+        }
+
+        return true;
+    }
+
+    /**
+     * Matches non-attachment text/html nodes
+     */
+    function matchHtml(node, msgPart) {
+        var disposition = node.headers['content-disposition'];
+        var isHtml = (/^text\/html/i.test(node.contentType.value) && (!disposition || (disposition && disposition[0].value !== 'attachment')));
+
+        if (!isHtml) {
+            return false;
+        }
+
+        var content = new TextDecoder('utf-8').decode(node.content).replace(/([\r]?\n)*$/g, '');
+        if (msgPart.type === 'html') {
+            msgPart.content = content;
+        } else {
+            msgPart.content.push({
+                type: 'html',
+                content: content
+            });
+        }
+
+        return true;
+    }
+
+    /**
+     * Matches non-attachment text/html nodes
+     */
+    function matchAttachment(node, msgPart) {
+        var disposition = node.headers['content-disposition'],
+            contentType = node.contentType.value;
+        var isTextAttachment = /^text\//i.test(contentType) && !! disposition && disposition[0].value === 'attachment',
+            isOtherAttachment = !/^text\//i.test(contentType) && !/^multipart\//i.test(contentType);
+
+        if (!isTextAttachment && !isOtherAttachment) {
+            return false;
+        }
+
+        if (msgPart.type === 'attachment') {
+            msgPart.content = node.content;
+        } else {
+            msgPart.content.push({
+                type: 'attachment',
+                content: node.content,
+                id: node.headers['content-id'] ? node.headers['content-id'][0].value : undefined
+            });
+        }
+
+        return true;
+    }
 
     return parser;
+
 });

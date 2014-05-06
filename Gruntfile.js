@@ -96,6 +96,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
 
     // Tasks
-    grunt.registerTask('dev', ['connect:dev']);
+    grunt.registerTask('dev', ['jshint', 'clean', 'copy', 'connect:dev']);
     grunt.registerTask('default', ['jshint', 'clean', 'copy', 'mochaTest', 'mocha_phantomjs']);
 };
