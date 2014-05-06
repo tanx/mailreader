@@ -28,7 +28,7 @@
 
                 cb(messageParts);
             };
-            parser.end(msgPart.plaintext || msgPart.raw);
+            parser.end(msgPart.raw);
         });
     };
 
