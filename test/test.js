@@ -78,7 +78,7 @@
                     }]
                 }, function(err, bodyParts) {
                     expect(err).to.not.exist;
-                    expect(bodyParts[0].signed).to.exist;
+                    expect(bodyParts[0].signedMessage).to.exist;
                     expect(bodyParts[0].signature).to.exist;
                     expect(bodyParts[0].content).to.not.be.empty;
                     expect(bodyParts[0].raw).to.not.exist;

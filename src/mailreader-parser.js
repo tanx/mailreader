@@ -99,7 +99,7 @@
             bodyPart.content.push(part);
         }
 
-        part.signed = node._childNodes[0].raw;
+        part.signedMessage = node._childNodes[0].raw;
         part.signature = new TextDecoder('utf-8').decode(node._childNodes[1].content);
 
         // walk the mime tree to find the nested nodes
