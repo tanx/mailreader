@@ -20,7 +20,7 @@
 
     /**
      * Interprets an rfc block
-     * @param {String} options.messageParts Message parts for parsing, as returned by https://github.com/whiteout-io/imap-client
+     * @param {String} options.bodyParts Body parts for parsing, as returned by https://github.com/whiteout-io/imap-client
      * @param {Function} callback will be called the message is parsed
      */
     mailreader.parse = function(options, callback) {
@@ -29,14 +29,14 @@
         }
 
         if (!mailreader._worker) {
-            parser.parse(options.messageParts, function(parsed) {
+            parser.parse(options.bodyParts, function(parsed) {
                 callback(null, parsed);
             });
             return;
         }
 
         mailreader._process({
-            messageParts: options.messageParts,
+            bodyParts: options.bodyParts,
             callback: callback
         });
     };
@@ -67,8 +67,7 @@
             current.callback(error);
         };
 
-        mailreader._worker.postMessage(current.messageParts);
-
+        mailreader._worker.postMessage(current.bodyParts);
     };
 
     return mailreader;
