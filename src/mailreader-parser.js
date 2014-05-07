@@ -19,8 +19,9 @@
         bodyParts.forEach(function(bodyPart) {
             var parser = new MimeParser();
             parser.onend = function() {
-                walkMimeTree(parser.node, bodyPart);
                 delete bodyPart.raw;
+                bodyPart.content = [];
+                walkMimeTree(parser.node, bodyPart);
 
                 // we're done with a body part, are we done?
                 parsedCounter++;
