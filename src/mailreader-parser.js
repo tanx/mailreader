@@ -173,17 +173,22 @@
             return false;
         }
 
+        var part;
         if (bodyPart.type === 'attachment') {
             // this mime node is the attachment node we gave to the mimeparser
-            bodyPart.content = node.content;
+            part = bodyPart;
         } else {
             // this mime node is part of a signed or encrypted node
-            bodyPart.content.push({
-                type: 'attachment',
-                content: node.content,
-                id: node.headers['content-id'] ? node.headers['content-id'][0].value : undefined
-            });
+            part = {
+                type: 'attachment'
+            };
+            bodyPart.content.push();
         }
+
+        part.content = node.content;
+        part.id = part.id || (node.headers['content-id'] ? node.headers['content-id'][0].value.replace(/[<>]/g, '') : undefined);
+        part.mimeType = part.mimeType || 'application/octet-stream';
+        part.filename = (node.headers['content-disposition'][0].params && node.headers['content-disposition'][0].params.filename) || node.contentType.params.name || 'attachment';
 
         return true;
     }
