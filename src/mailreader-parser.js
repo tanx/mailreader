@@ -182,7 +182,7 @@
             part = {
                 type: 'attachment'
             };
-            bodyPart.content.push();
+            bodyPart.content.push(part);
         }
 
         part.content = node.content;
