@@ -6,9 +6,7 @@
 
     self.onmessage = function(e) {
         require(['mailreader-parser'], function(parser) {
-            parser.parse(e.data.method, e.data.raw, function(parsed) {
-                self.postMessage(parsed);
-            });
+            parser.parse(e.data, self.postMessage.bind(self));
         });
     };
 }());
