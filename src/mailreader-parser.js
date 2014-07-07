@@ -99,7 +99,8 @@
             bodyPart.content.push(part);
         }
 
-        part.signedMessage = node._childNodes[0].raw;
+        // email.js automatically converts \r\n to \n ... normalize to \r\n for signature check!
+        part.signedMessage = node._childNodes[0].raw.replace(/\r/g, '').replace(/\n/g, '\r\n');
         part.signature = new TextDecoder('utf-8').decode(node._childNodes[1].content);
 
         // walk the mime tree to find the nested nodes
@@ -166,7 +167,7 @@
     function matchAttachment(node, bodyPart) {
         var disposition = node.headers['content-disposition'],
             contentType = node.contentType.value,
-            isTextAttachment = /^text\//i.test(contentType) && !! disposition && disposition[0].value === 'attachment',
+            isTextAttachment = /^text\//i.test(contentType) && !!disposition && disposition[0].value === 'attachment',
             isOtherAttachment = !/^text\//i.test(contentType) && !/^multipart\//i.test(contentType);
 
         if (!isTextAttachment && !isOtherAttachment) {
