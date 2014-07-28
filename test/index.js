@@ -3,7 +3,7 @@
 require.config({
     baseUrl: 'lib',
     paths: {
-        'test': '..',
+        'test': '..'
     },
 });
 
