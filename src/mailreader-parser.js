@@ -35,7 +35,7 @@
         });
     };
 
-    var mimeTreeMatchers = [matchEncrypted, matchSigned, matchText, matchHtml, matchAttachment];
+    var mimeTreeMatchers = [matchEncrypted, matchSigned, matchAttachment, matchText, matchHtml];
 
     function walkMimeTree(mimeNode, bodyPart) {
         var i = mimeTreeMatchers.length;
