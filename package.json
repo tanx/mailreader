@@ -1,6 +1,6 @@
 {
   "name": "mailreader",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "scripts": {
     "test": "grunt"
   },
@@ -8,6 +8,10 @@
   "dependencies": {
     "wo-stringencoding": "~0.1.1",
     "mimeparser": "~0.3.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com:whiteout-io/mailreader.git"
   },
   "devDependencies": {
     "chai": "~1.8.1",
