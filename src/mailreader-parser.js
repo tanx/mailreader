@@ -167,7 +167,7 @@
     function matchAttachment(node, bodyPart) {
         var disposition = node.headers['content-disposition'],
             contentType = node.contentType.value,
-            isTextAttachment = /^text\//i.test(contentType) && !!disposition && disposition[0].value === 'attachment',
+            isTextAttachment = /^text\//i.test(contentType) && disposition && disposition[0].value === 'attachment',
             isOtherAttachment = !/^text\//i.test(contentType) && !/^multipart\//i.test(contentType);
 
         if (!isTextAttachment && !isOtherAttachment) {
@@ -189,7 +189,7 @@
         part.content = node.content;
         part.id = part.id || (node.headers['content-id'] ? node.headers['content-id'][0].value.replace(/[<>]/g, '') : undefined);
         part.mimeType = part.mimeType || 'application/octet-stream';
-        part.filename = part.filename || (node.headers['content-disposition'][0].params && node.headers['content-disposition'][0].params.filename) || node.contentType.params.name || 'attachment';
+        part.filename = part.filename || (disposition && disposition[0].params && disposition[0].params.filename) || node.contentType.params.name || 'attachment';
 
         return true;
     }
