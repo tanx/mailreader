@@ -16,28 +16,48 @@
     // parse the body parts and handle the results for the individual mime nodes
     parser.parse = function(bodyParts, cb) {
         var parsedCounter = 0;
+
+        // feed each body part to the mimeparser
         bodyParts.forEach(function(bodyPart) {
             var parser = new MimeParser();
+
+            // body part has been parsed
             parser.onend = function() {
-                delete bodyPart.raw;
-                bodyPart.content = [];
+                delete bodyPart.raw; // part has been parsed, we can remove the raw attribute
+
+                bodyPart.content = []; // holds subparts, e.g. for encrypted and/or signed nodes
+
+                // traverse through the parsed result
                 walkMimeTree(parser.node, bodyPart);
 
-                // we're done with a body part, are we done?
+                // we're done with a body part, are we done with all parts?
                 parsedCounter++;
                 if (parsedCounter < bodyParts.length) {
+                    // nope, more body parts left to parse
                     return;
                 }
 
+                // we're done
                 cb(bodyParts);
             };
+
+            // parse the body part
             parser.end(bodyPart.raw);
         });
     };
 
+    // functions that return true/false if they were able to handle a certain kind of body part
     var mimeTreeMatchers = [matchEncrypted, matchSigned, matchAttachment, matchText, matchHtml];
 
+    // do a depth-first traversal of the body part, check for each node if it matches
+    // a certain type, then poke into its child nodes. not a pure inorder traversal b/c
+    // lookup is terminated when higher-up node can already be matched, e.g. encrypted/signed
+    // multipart nodes
     function walkMimeTree(mimeNode, bodyPart) {
+        // normalize the mime node
+        normalize(mimeNode);
+
+        // iterate through the matchers and see how to best take care of the mime node
         var i = mimeTreeMatchers.length;
         while (i--) {
             if (mimeTreeMatchers[i](mimeNode, bodyPart)) {
@@ -45,6 +65,7 @@
             }
         }
 
+        // depth-first traverse the child nodes
         if (mimeNode._childNodes) {
             mimeNode._childNodes.forEach(function(childNode) {
                 walkMimeTree(childNode, bodyPart);
@@ -66,6 +87,9 @@
             return false;
         }
 
+        // normalize the child node
+        normalize(node._childNodes[1]);
+
         bodyPart.content = new TextDecoder('utf-8').decode(node._childNodes[1].content);
         return true;
     }
@@ -79,7 +103,18 @@
      * |-- application/pgp-signature
      */
     function matchSigned(node, bodyPart) {
-        var isSigned = /^multipart\/signed/i.test(node.contentType.value) && node._childNodes && node._childNodes[0] && node._childNodes[1] && /^application\/pgp-signature/i.test(node._childNodes[1].contentType.value);
+        // does the content type fit?
+        var isSigned = /^multipart\/signed/i.test(node.contentType.value);
+
+        // does the mime node have child nodes?
+        isSigned = isSigned && node._childNodes && node._childNodes[0] && node._childNodes[1];
+
+        // normalize the child nodes
+        isSigned && normalize(node._childNodes[0]);
+        isSigned && normalize(node._childNodes[1]);
+
+        // do the child nodes fit?
+        isSigned = isSigned && /^application\/pgp-signature/i.test(node._childNodes[1].contentType.value);
 
         if (!isSigned) {
             return false;
@@ -187,11 +222,47 @@
         }
 
         part.content = node.content;
-        part.id = part.id || (node.headers['content-id'] ? node.headers['content-id'][0].value.replace(/[<>]/g, '') : undefined);
-        part.mimeType = part.mimeType || 'application/octet-stream';
-        part.filename = part.filename || (disposition && disposition[0].params && disposition[0].params.filename) || node.contentType.params.name || 'attachment';
+        part.id = part.id || (node.headers['content-id'] && node.headers['content-id'][0].value.replace(/[<>]/g, ''));
+        part.mimeType = part.mimeType || contentType;
+        part.filename = part.filename || (disposition && disposition[0].params.filename) || node.contentType.params.name || 'attachment';
 
         return true;
+    }
+
+
+    /**
+     * Normalizes a mime node where necessary
+     * - add contentType
+     * - add contentType params
+     * - add content
+     * - add raw
+     * - normalize content-id
+     * - normalize content-disposition
+     */
+    function normalize(node) {
+        // normalize the optional content-type, fallback to 'application/octet-stream'
+        node.contentType = node.contentType || {};
+        node.contentType.value = node.contentType.value || 'application/octet-stream';
+        node.contentType.params = node.contentType.params || {};
+
+        // normalize the contents
+        node.raw = node.raw || '';
+        node.content = node.content || '';
+
+        // optional
+        if (node.headers['content-id']) {
+            // node has content-id set, let's normalize it
+            var cid = node.headers['content-id'][0] = node.headers['content-id'][0] || {};
+            cid.value = cid.value || '';
+        }
+
+        // optional
+        if (node.headers['content-disposition']) {
+            // this is an attachment node, let's normalize node.headers['content-disposition']
+            var disposition = node.headers['content-disposition'][0] = node.headers['content-disposition'][0] || {};
+            disposition.value = disposition.value || '';
+            disposition.params = disposition.params || {};
+        }
     }
 
     return parser;
