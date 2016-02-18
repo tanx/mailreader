@@ -49,10 +49,10 @@ module.exports = function(grunt) {
                     'mocha/mocha.css',
                     'requirejs/require.js',
                     'arraybuffer-slice/index.js',
-                    'wo-stringencoding/dist/*',
-                    'mimeparser/src/*',
-                    'mimeparser/node_modules/mimefuncs/src/*',
-                    'mimeparser/node_modules/wo-addressparser/src/*'
+                    'emailjs-stringencoding/src/*',
+                    'emailjs-mime-parser/src/*',
+                    'emailjs-mime-parser/node_modules/emailjs-mime-codec/src/*',
+                    'emailjs-mime-parser/node_modules/emailjs-addressparser/src/*'
                 ],
                 dest: 'test/lib/',
                 rename: function(dest, src) {

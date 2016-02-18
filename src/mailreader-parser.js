@@ -2,9 +2,9 @@
     'use strict';
 
     if (typeof define === 'function' && define.amd) {
-        define(['mimeparser', 'stringencoding'], factory);
+        define(['emailjs-mime-parser', 'emailjs-stringencoding'], factory);
     } else if (typeof exports === 'object') {
-        module.exports = factory(require('mimeparser'), require('wo-stringencoding'));
+        module.exports = factory(require('emailjs-mime-parser'), require('emailjs-stringencoding'));
     }
 })(function(MimeParser, stringencoding) {
     'use strict';
