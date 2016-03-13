@@ -247,7 +247,7 @@
 
         // normalize the contents
         node.raw = node.raw || '';
-        node.content = node.content || '';
+        node.content = node.content || new Uint8Array(0);
 
         // optional
         if (node.headers['content-id']) {
